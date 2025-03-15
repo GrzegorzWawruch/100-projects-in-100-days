@@ -1,5 +1,7 @@
 import requests
+import os
 from twilio.rest import Client
+from twilio.http.http_client import TwilioHttpClient
 
 OWM_Endpoint = "https://api.openweathermap.org/data/2.5/forecast"
 api_key = "<api_key>"
@@ -27,7 +29,11 @@ for hour_data in weather_data["list"]:
         will_rain = True
 
 if will_rain:
-    client = Client(account_sid, auth_token)
+
+    proxy_client = TwilioHttpClient()
+    proxy_client.session.proxies = {"https": os.environ['https_proxy']}
+
+    client = Client(account_sid, auth_token, http_client=proxy_client)
     message = client.messages \
         .create(
         body = "It is going to rain today. Remember to bring an umbrella",
